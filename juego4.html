@@ -1,0 +1,258 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Lienzo con Figura</title>
+    <style>
+        body {
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            height: 100vh;
+            margin: 0;
+            flex-direction: column;
+        }
+        canvas {
+            background-color: skyblue;
+        }
+        #reiniciar {
+            margin-top: 20px;
+            padding: 10px 20px;
+            font-size: 16px;
+            background-color: #4CAF50;
+            color: white;
+            border: none;
+            border-radius: 5px;
+            cursor: pointer;
+        }
+        #reiniciar:hover {
+            background-color: #45a049;
+        }
+        #puntos {
+            font-size: 18px;
+            margin-top: 10px;
+        }
+    </style>
+</head>
+<body>
+    <canvas id="lienzo" width="400" height="470"></canvas>
+    <p id="puntos">Puntos: 0</p>
+    <button id="reiniciar">Reiniciar</button>
+
+    <script>
+        document.addEventListener("DOMContentLoaded", function() {
+            var canvas = document.getElementById("lienzo");
+            var ctx = canvas.getContext("2d");
+
+            var figura = {
+                x: 0,
+                y: 20,
+                width: 50,
+                height: 50,
+                speed: 5,
+                vida: 3,
+                vidaMax: 3 // Vida máxima de la figura
+            };
+
+            var circulos = [];
+            var disparosEnemigos = [];
+            var velocidadCirculos = 3;
+            var velocidadDisparosEnemigos = 3;
+
+            var enemigo = {
+                x: canvas.width - 50,
+                y: Math.random() * (canvas.height - 50),
+                width: 50,
+                height: 50,
+                speed: 3,
+                direction: 1,
+                vida: 3,
+                vidaMax: 3 // Vida máxima del enemigo
+            };
+
+            var puntos = 0;
+            var juegoTerminado = false;
+
+            var imagenFigura = new Image();
+            imagenFigura.src = 'avion2.png';
+
+            var imagenEnemigo = new Image();
+            imagenEnemigo.src = 'perro.png';
+
+            // Música de fondo
+            var musicaFondo = new Audio('musica_fondo.mp3');
+            musicaFondo.loop = true; // Hacer que la música se repita
+            musicaFondo.play();
+
+            // Sonido de disparo
+            var sonidoDisparo = new Audio('disparo.mp3');
+
+            function dibujarFigura() {
+                ctx.clearRect(0, 0, canvas.width, canvas.height);
+                ctx.drawImage(imagenFigura, figura.x, figura.y, figura.width, figura.height);
+                if (enemigo.vida > 0) {
+                    ctx.drawImage(imagenEnemigo, enemigo.x, enemigo.y, enemigo.width, enemigo.height);
+                }
+                dibujarBarraDeVida(figura.x, figura.y - 10, figura.vida, figura.vidaMax, "green");
+                if (enemigo.vida > 0) {
+                    dibujarBarraDeVida(enemigo.x, enemigo.y - 10, enemigo.vida, enemigo.vidaMax, "red");
+                }
+            }
+
+            function dibujarBarraDeVida(x, y, vida, vidaMax, color) {
+                var anchoBarra = 50;
+                var alturaBarra = 5;
+                ctx.fillStyle = "gray";
+                ctx.fillRect(x, y, anchoBarra, alturaBarra);
+                ctx.fillStyle = color;
+                ctx.fillRect(x, y, anchoBarra * (vida / vidaMax), alturaBarra);
+            }
+
+            function dibujarCirculos() {
+                ctx.fillStyle = "blue";
+                for (var i = 0; i < circulos.length; i++) {
+                    var circulo = circulos[i];
+                    ctx.beginPath();
+                    ctx.arc(circulo.x, circulo.y, 5, 0, Math.PI * 2);
+                    ctx.fill();
+                }
+            }
+
+            function dibujarDisparosEnemigos() {
+                ctx.fillStyle = "red";
+                for (var i = 0; i < disparosEnemigos.length; i++) {
+                    var disparo = disparosEnemigos[i];
+                    ctx.beginPath();
+                    ctx.arc(disparo.x, disparo.y, 5, 0, Math.PI * 2);
+                    ctx.fill();
+                }
+            }
+
+            function actualizar() {
+                if (juegoTerminado) return;
+
+                dibujarFigura();
+                dibujarCirculos();
+                dibujarDisparosEnemigos();
+                moverCirculos();
+                moverDisparosEnemigos();
+                eliminarCirculosFuera();
+                eliminarDisparosEnemigosFuera();
+                moverEnemigo();
+                detectarColisiones();
+                detectarColisionesConDisparosEnemigos();
+                actualizarPuntos();
+            }
+
+            function moverCirculos() {
+                for (var i = 0; i < circulos.length; i++) {
+                    circulos[i].x += velocidadCirculos;
+                }
+            }
+
+            function moverDisparosEnemigos() {
+                for (var i = 0; i < disparosEnemigos.length; i++) {
+                    disparosEnemigos[i].x -= velocidadDisparosEnemigos;
+                }
+            }
+
+            function eliminarCirculosFuera() {
+                circulos = circulos.filter(function(circulo) {
+                    return circulo.x < canvas.width;
+                });
+            }
+
+            function eliminarDisparosEnemigosFuera() {
+                disparosEnemigos = disparosEnemigos.filter(function(disparo) {
+                    return disparo.x > 0;
+                });
+            }
+
+            function moverEnemigo() {
+                enemigo.y += enemigo.speed * enemigo.direction;
+                if (enemigo.y <= 0 || enemigo.y + enemigo.height >= canvas.height) {
+                    enemigo.direction *= -1;
+                }
+                if (Math.random() < 0.01) {
+                    disparosEnemigos.push({ x: enemigo.x, y: enemigo.y + enemigo.height / 2 });
+                }
+            }
+
+            function detectarColisiones() {
+                for (var i = 0; i < circulos.length; i++) {
+                    var circulo = circulos[i];
+                    if (circulo.x >= enemigo.x && circulo.x <= enemigo.x + enemigo.width &&
+                        circulo.y >= enemigo.y && circulo.y <= enemigo.y + enemigo.height) {
+                        enemigo.vida -= 1;
+                        circulos.splice(i, 1);
+                        i--;
+                        if (enemigo.vida <= 0) {
+                            puntos += 1;
+                            resetEnemigo();
+                        }
+                    }
+                }
+            }
+
+            function detectarColisionesConDisparosEnemigos() {
+                for (var i = 0; i < disparosEnemigos.length; i++) {
+                    var disparo = disparosEnemigos[i];
+                    if (disparo.x >= figura.x && disparo.x <= figura.x + figura.width &&
+                        disparo.y >= figura.y && disparo.y <= figura.y + figura.height) {
+                        figura.vida -= 1;
+                        disparosEnemigos.splice(i, 1);
+                        i--;
+                        if (figura.vida <= 0) {
+                            juegoTerminado = true;
+                            alert("Game Over! Puntos: " + puntos);
+                        }
+                    }
+                }
+            }
+
+            function resetEnemigo() {
+                enemigo.x = canvas.width - 50;
+                enemigo.y = Math.random() * (canvas.height - 50);
+                enemigo.vida = enemigo.vidaMax;
+            }
+
+            function actualizarPuntos() {
+                document.getElementById("puntos").textContent = "Puntos: " + puntos;
+            }
+
+            function reiniciarJuego() {
+                figura.y = 20;
+                figura.vida = figura.vidaMax;
+                circulos = [];
+                disparosEnemigos = [];
+                puntos = 0;
+                juegoTerminado = false;
+                resetEnemigo();
+                actualizarPuntos();
+            }
+
+            document.addEventListener("keydown", function(event) {
+                if (event.key === "ArrowUp") {
+                    figura.y -= figura.speed;
+                    if (figura.y < 0) figura.y = 0;
+                } else if (event.key === "ArrowDown") {
+                    figura.y += figura.speed;
+                    if (figura.y + figura.height > canvas.height) figura.y = canvas.height - figura.height;
+                } else if (event.key === " ") {
+                    circulos.push({ x: figura.x + figura.width, y: figura.y + figura.height / 2 });
+                    sonidoDisparo.currentTime = 0;
+                    sonidoDisparo.play();
+                }
+                actualizar();
+            });
+
+            document.getElementById("reiniciar").addEventListener("click", function() {
+                reiniciarJuego();
+            });
+
+            imagenFigura.onload = function() {
+                dibujarFigura();
+            };
+
+            imagenEnemigo.onload

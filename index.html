@@ -1,0 +1,220 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Scape Circus</title>
+    <style>
+        body {
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            height: 100vh;
+            margin: 0;
+            background-color: #f5f5f5;
+            font-family: Arial, sans-serif;
+        }
+        canvas {
+            border: 1px solid #000;
+        }
+        .button {
+            display: inline-block;
+            padding: 10px 20px;
+            margin: 5px;
+            color: white;
+            background-color: #007BFF;
+            border: none;
+            border-radius: 5px;
+            text-decoration: none;
+            text-align: center;
+            cursor: pointer;
+        }
+        .button:hover {
+            background-color: #0056b3;
+        }
+    </style>
+</head>
+<body>
+    <canvas id="myCanvas" width="800" height="600"></canvas>
+    <script>
+        const canvas = document.getElementById('myCanvas');
+        const context = canvas.getContext('2d');
+
+        const clouds = [];
+        const snowflakes = [];
+
+        const image = new Image();
+        image.src = 'logo.png';
+
+        const gif = new Image();
+        gif.src = 'carpa.png';
+
+        const audio = new Audio('pARTY.mp4');
+
+        function createCloud(x, y, size) {
+            return { x, y, size, speed: 1.5 + Math.random() * 4 };
+        }
+
+        for (let i = 0; i < 5; i++) {
+            clouds.push(createCloud(Math.random() * canvas.width, Math.random() * canvas.height / 13, 30 + Math.random() * 40));
+        }
+
+        function drawCloud(cloud) {
+            context.fillStyle = 'white';
+            context.beginPath();
+            context.arc(cloud.x, cloud.y, cloud.size, 0, Math.PI * 2);
+            context.arc(cloud.x + cloud.size, cloud.y, cloud.size * 1.5, 0, Math.PI * 2);
+            context.arc(cloud.x + cloud.size * 2.5, cloud.y, cloud.size, 0, Math.PI * 2);
+            context.fill();
+        }
+
+        function updateClouds() {
+            clouds.forEach(cloud => {
+                cloud.x += cloud.speed;
+                if (cloud.x - cloud.size * 3 > canvas.width) {
+                    cloud.x = -cloud.size * 3;
+                }
+            });
+        }
+
+        function createSnowflake() {
+            return {
+                x: Math.random() * canvas.width,
+                y: Math.random() * canvas.height,
+                size: 2 + Math.random() * 3,
+                speed: 1 + Math.random() * 2,
+                drift: (Math.random() - 0.5) * 2
+            };
+        }
+
+        for (let i = 0; i < 100; i++) {
+            snowflakes.push(createSnowflake());
+        }
+
+        function drawSnowflake(snowflake) {
+            context.fillStyle = 'white';
+            context.beginPath();
+            context.arc(snowflake.x, snowflake.y, snowflake.size, 0, Math.PI * 2);
+            context.fill();
+        }
+
+        function updateSnowflakes() {
+            snowflakes.forEach(snowflake => {
+                snowflake.y += snowflake.speed;
+                snowflake.x += snowflake.drift;
+                if (snowflake.y > canvas.height) {
+                    snowflake.y = -snowflake.size;
+                }
+                if (snowflake.x > canvas.width) {
+                    snowflake.x = -snowflake.size;
+                }
+                if (snowflake.x < -snowflake.size) {
+                    snowflake.x = canvas.width + snowflake.size;
+                }
+            });
+        }
+
+        function drawPinkTree(x, y) {
+            context.fillStyle = '#8B4513';
+            context.fillRect(x + 4.5, y, 14, 60);
+
+            context.fillStyle = '#FF69B4';
+            context.beginPath();
+            context.arc(x + 10, y - 30, 60, 0, Math.PI * 2);
+            context.fill();
+
+            context.beginPath();
+            context.arc(x, y - 100, 50, 0, Math.PI * 2);
+            context.fill();
+
+            context.beginPath();
+            context.arc(x + 20, y - 10, 20, 0, Math.PI * 2);
+            context.fill();
+        }
+
+        function drawTrees() {
+            for (let i = 0; i < 5; i++) {
+                let x = 200 + i * 150;
+                let y = canvas.height / 2 - 60;
+                drawPinkTree(x, y);
+            }
+        }
+
+        function drawButton(button) {
+            context.fillStyle = button.color;
+            context.fillRect(button.x, button.y, button.width, button.height);
+
+            context.strokeStyle = 'white';
+            context.lineWidth = 2;
+            context.strokeRect(button.x, button.y, button.width, button.height);
+
+            context.fillStyle = 'white';
+            context.font = 'bold 16px Arial';
+            context.textAlign = 'center';
+            context.textBaseline = 'middle';
+            context.fillText(button.text, button.x + button.width / 2, button.y + button.height / 2);
+
+            button.y += button.direction * 0.5;
+            if (button.y > button.originalY + 5 || button.y < button.originalY - 5) {
+                button.direction *= -1;
+            }
+        }
+
+        const buttons = [
+            { x: 650, y: 100, width: 120, height: 40, text: 'JUGAR', color: '#FF6347', link: 'juego2.html', originalY: 100, direction: 1 },
+            { x: 650, y: 160, width: 120, height: 40, text: 'NIVELES', color: '#FFA500', link: 'pagina2.html', originalY: 160, direction: 1 },
+            { x: 650, y: 220, width: 120, height: 40, text: 'IDIOMA', color: 'red', link: 'idioma.html', originalY: 220, direction: 1 },
+            { x: 650, y: 280, width: 120, height: 40, text: 'APARTADO', color: 'brown', link: 'ajustes.html', originalY: 280, direction: 1 }
+        ];           
+
+        canvas.addEventListener('click', function(event) {
+            const rect = canvas.getBoundingClientRect();
+            const clickX = event.clientX - rect.left;
+            const clickY = event.clientY - rect.top;
+
+            buttons.forEach(button => {
+                if (clickX > button.x && clickX < button.x + button.width && clickY > button.y && clickY < button.y + button.height) {
+                    window.location.href = button.link;
+                }
+            });
+        });
+
+        function animate() {
+            context.clearRect(0, 0, canvas.width, canvas.height);
+
+            context.fillStyle = 'pink';
+            context.fillRect(0, 0, canvas.width, canvas.height / 2);
+
+            context.fillStyle = 'brown';
+            context.fillRect(0, canvas.height / 2, canvas.width, canvas.height / 2);
+
+            clouds.forEach(drawCloud);
+            drawTrees();
+            snowflakes.forEach(drawSnowflake);
+            buttons.forEach(drawButton);
+
+            if (image.complete) {
+                context.drawImage(image, 10, 1, 200, 200);
+            } else {
+                image.onload = () => context.drawImage(image, 10, 1, 200, 200);
+            }
+
+            if (gif.complete) {
+                context.drawImage(gif, 500, 300, 300, 300);
+            } else {
+                gif.onload = () => context.drawImage(gif, 500, 300, 300, 300);
+            }
+
+            updateClouds();
+            updateSnowflakes();
+            requestAnimationFrame(animate);
+        }
+
+        document.addEventListener('keydown', function() {
+            audio.play();
+        });
+
+        animate();
+    </script>
+</body>
+</html>

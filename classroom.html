@@ -1,0 +1,103 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Insertar Imagen en Canvas</title>
+</head>
+<body>
+   <canvas id="lienzo" width="500" height="300" style="border:1px solid blue">;
+ </canvas>
+    
+    <canvas id="lienzo" width="500" height="300" style="border:1px solid blue">;
+   <p>Tu navegador no soporta CANVAS. Deberías actualizar tu navegador</p>
+   <img src="imagen_falsa.png">
+ </canvas>
+    
+    
+    </body>
+    </html>
+ <script type="text/javascript">
+   var hoja=document.getElementById("lienzo");
+   var dibujo=hoja.getContext("2d");
+     
+     
+     
+lienzo.fillStyle="#B5CDFF";
+lienzo.fillRect(0,0,500,300);
+lienzo.fillStyle="#F8FF5A";
+lienzo.beginPath();
+lienzo.arc(290,130,54,0,Math.PI*2,true);
+lienzo.closePath;
+lienzo.fill();
+lienzo.fillStyle="rgba(232,236,247,0.5)";
+lienzo.beginPath();
+lienzo.arc(10,200,80,0,Math.PI*2, true);
+lienzo.arc(88,220,46,0,Math.PI*2, true);
+lienzo.arc(154,199,30,0,Math.PI*2, true);
+lienzo.arc(232,210,62,0,Math.PI*2, true);
+lienzo.arc(320,205,25,0,Math.PI*2, true);
+lienzo.arc(380,200,44,0,Math.PI*2, true);
+lienzo.arc(442,208,23,0,Math.PI*2, true);
+lienzo.arc(498,200,41,0,Math.PI*2, true);
+lienzo.closePath;
+lienzo.fill();
+     
+     var gr=mi_dibujo.createLinearGradient(0,200,0,280);
+gr.addColorStop(0,"#D3DEF3");
+gr.addColorStop(1,"#0628A4");
+mi_dibujo.fillStyle=gr;
+mi_dibujo.fillRect(0,200,500,300);
+     
+     
+     mi_dibujo.beginPath();
+mi_dibujo.fillStyle="#656652";
+mi_dibujo.strokeStyle="#3C3F09"
+mi_dibujo.moveTo(300,219);
+mi_dibujo.lineTo(360,219);
+mi_dibujo.lineTo(368,203);
+mi_dibujo.lineTo(296,206);
+mi_dibujo.lineTo(300,219);
+mi_dibujo.closePath;
+mi_dibujo.stroke();
+mi_dibujo.fill();
+     
+     mi_dibujo.beginPath();
+mi_dibujo.fillStyle="#3C3F09";
+mi_dibujo.beginPath();
+mi_dibujo.moveTo(300,219);
+mi_dibujo.lineTo(360,219);
+mi_dibujo.lineTo(364,212);
+mi_dibujo.lineTo(298,214);
+mi_dibujo.lineTo(300,219);
+mi_dibujo.fill();
+     
+     
+     mi_dibujo.fillStyle="#867048";
+mi_dibujo.beginPath();
+mi_dibujo.moveTo(314,205);
+mi_dibujo.lineTo(330,101);
+mi_dibujo.lineTo(334,103);
+mi_dibujo.lineTo(322,204);
+mi_dibujo.fill();
+     
+     mi_dibujo.fillStyle="rgba(210,151,50,0.6)";
+mi_dibujo.beginPath();
+mi_dibujo.moveTo(333,105);
+mi_dibujo.lineTo(378,194);
+mi_dibujo.lineTo(322,188);
+mi_dibujo.lineTo(333,105);
+mi_dibujo.closePath;
+mi_dibujo.fill();
+
+     mi_dibujo.fillStyle="#2E7B10";
+mi_dibujo.beginPath();
+mi_dibujo.arc(100,250,45,-0.3,Math.PI*1.1, true);
+mi_dibujo.arc(135,246,33,-0.3,Math.PI*1.1, true);
+mi_dibujo.closePath;
+mi_dibujo.fill();
+   /*Aquí escribiremos TODAS las órdenes que nos permiten dibujar dentro del CANVAS*/
+ </script>
+
+    
+

@@ -1,0 +1,278 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Juego de Escape con Obstáculos</title>
+<style>
+  body {
+    margin: 0;
+    padding: 0;
+    background-color: red;
+    height: 100vh;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    font-family: Arial, sans-serif;
+    color: white;
+  }
+
+  .habitacion {
+    display: none; /* Oculta la habitación al inicio */
+    position: relative;
+    width: 600px;
+    height: 400px;
+    background-color: pink;
+    border: 2px solid #CCCCCC;
+    box-shadow: 0 0 10px rgba(0, 0, 0, 0.5);
+  }
+
+  .jugador {
+    position: absolute;
+    bottom: 50px;
+    left: 60px;
+    width: 40px;
+    height: 40px;
+  }
+
+  .obstaculo {
+    position: absolute;
+    width: 60px;
+    height: 60px;
+  }
+
+  .salida {
+    position: absolute;
+    width: 40px;
+    height: 40px;
+  }
+
+  .salida-correcta {
+ 
+  }
+
+  .vida {
+    position: absolute;
+    top: 10px;
+    left: 10px;
+    width: 100%;
+    height: 20px;
+    background-color: #444;
+    border: 2px solid #fff;
+    border-radius: 5px;
+  }
+
+  .vida-barra {
+    height: 100%;
+    background-color: #FF4500;
+    border-radius: 5px;
+    width: 100%;
+  }
+
+  .boton-pausa {
+    position: fixed;
+    top: 60px;
+    right: 10px;
+    padding: 10px 60px;
+    background-color: #DD92A4;
+    color: white;
+    border: none;
+    border-radius: 50px;
+    cursor: pointer;
+  }
+
+  .boton-inicio {
+    position: absolute;
+    top: 50%;
+    left: 50%;
+    transform: translate(-50%, -50%);
+    padding: 20px 60px;
+    background-color: #4CAF50;
+    color: white;
+    border: none;
+    border-radius: 50px;
+    cursor: pointer;
+    font-size: 20px;
+  }
+</style>
+</head>
+<body>
+
+<audio controls autoplay id="audioJuego" src="corre.mp3"></audio>
+
+<button class="boton-inicio" id="botonInicio">Iniciar Juego</button>
+
+<div class="vida">
+  <div class="vida-barra" id="vidaBarra"></div>
+</div>
+<div class="habitacion" id="habitacion">
+  <img src="personaje_frente.gif" class="jugador" id="jugador" alt="Jugador">
+  <img src="nave.png" class="obstaculo" id="obstaculo1" style="top: 100px; left: 500px;" alt="Obstáculo 1">
+  <img src="nave.png" class="obstaculo" id="obstaculo2" style="top: 300px; left: 500px;" alt="Obstáculo 2">
+  <img src="nave.png" class="obstaculo" id="obstaculo3" style="top: 150px; left: 300px;" alt="Obstáculo 3">
+  <img src="nave.png" class="obstaculo" id="obstaculo4" style="top: 40px; left: 0px;" alt="Obstáculo 4">
+  <img src="dulce.png" class="salida" style="top: 50px; left: 550px;" alt="Salida Incorrecta">
+  <img src="dulce.png" class="salida" style="top: 100px; left: 550px;" alt="Salida Incorrecta">
+  <img src="dulce.png" class="salida" style="top: 150px; left: 550px;" alt="Salida Incorrecta">
+  <img src="dulce.png" class="salida" style="top: 200px; left: 550px;" alt="Salida Incorrecta">
+  <img src="dulce.png" class="salida salida-correcta" style="top: 250px; left: 550px;" alt="Salida Correcta">
+</div>
+
+<button class="boton-pausa" id="botonPausa">Pausa</button>
+
+<script>
+  document.addEventListener('DOMContentLoaded', function () {
+    const jugador = document.getElementById('jugador');
+    const obstaculos = document.querySelectorAll('.obstaculo');
+    const salidas = document.querySelectorAll('.salida');
+    const habitacion = document.getElementById('habitacion');
+    const vidaBarra = document.getElementById('vidaBarra');
+    const botonPausa = document.getElementById('botonPausa');
+    const botonInicio = document.getElementById('botonInicio');
+    const audioJuego = document.getElementById('audioJuego');
+    let jugadorX, jugadorY, vida;
+    const velocidadMovimiento = 10;
+    const velocidadPersecucion = 2; // Cambié la velocidad para que los obstáculos no sean demasiado rápidos
+    let juegoEnPausa = false;
+    let intervaloObstaculos;
+
+    function iniciarJuego() {
+      habitacion.style.display = 'block';
+      botonInicio.style.display = 'none';
+      audioJuego.play();
+      jugadorX = 60; // Inicializo la posición del jugador
+      jugadorY = habitacion.offsetHeight - 90; // Ajusto la posición del jugador
+      vida = 100;
+      vidaBarra.style.width = vida + '%';
+      jugador.style.left = jugadorX + 'px';
+      jugador.style.top = jugadorY + 'px';
+      juegoEnPausa = false;
+      intervaloObstaculos = setInterval(moverObstaculos, 200);
+    }
+
+    function moverJugador(direccion) {
+      if (juegoEnPausa) return;
+      switch (direccion) {
+        case 'izquierda':
+          jugadorX = Math.max(jugadorX - velocidadMovimiento, 0);
+          jugador.src = 'payaso1.png';
+          break;
+        case 'derecha':
+          jugadorX = Math.min(jugadorX + velocidadMovimiento, habitacion.offsetWidth - 40);
+          jugador.src = 'payaso2.png';
+          break;
+        case 'arriba':
+          jugadorY = Math.max(jugadorY - velocidadMovimiento, 0);
+          jugador.src = 'payaso3.png';
+          break;
+        case 'abajo':
+          jugadorY = Math.min(jugadorY + velocidadMovimiento, habitacion.offsetHeight - 40);
+          jugador.src = 'payaso.png';
+          break;
+      }
+      jugador.style.left = jugadorX + 'px';
+      jugador.style.top = jugadorY + 'px';
+      verificarSalida();
+      verificarColision();
+    }
+      
+
+    function verificarSalida() {
+      for (const salida of salidas) {
+        const salidaRect = salida.getBoundingClientRect();
+        const jugadorRect = jugador.getBoundingClientRect();
+        if (
+          jugadorRect.right >= salidaRect.left &&
+          jugadorRect.left <= salidaRect.right &&
+          jugadorRect.bottom >= salidaRect.top &&
+          jugadorRect.top <= salidaRect.bottom
+        ) {
+          if (salida.classList.contains('salida-correcta')) {
+            alert('¡Felicidades! ¡Has encontrado la salida correcta!');
+            window.location.href = 'juego3.html'; // Redirige al siguiente nivel
+          } else {
+            alert('¡Esta no es la salida correcta! Sigue buscando.');
+          }
+          return;
+        }
+      }
+    }
+
+    function verificarColision() {
+      for (const obstaculo of obstaculos) {
+        const obstaculoRect = obstaculo.getBoundingClientRect();
+        const jugadorRect = jugador.getBoundingClientRect();
+        if (
+          jugadorRect.right >= obstaculoRect.left &&
+          jugadorRect.left <= obstaculoRect.right &&
+          jugadorRect.bottom >= obstaculoRect.top &&
+          jugadorRect.top <= obstaculoRect.bottom
+        ) {
+          vida -= 1;
+          vidaBarra.style.width = vida + '%';
+
+          if (vida <= 0) {
+            clearInterval(intervaloObstaculos); // Paro los movimientos de los obstáculos
+            alert('¡Game Over!');
+            habitacion.style.display = 'none';
+            botonInicio.style.display = 'block';
+            return;
+          }
+        }
+      }
+    }
+
+    function moverObstaculos() {
+      for (const obstaculo of obstaculos) {
+        let obstaculoX = parseFloat(obstaculo.style.left);
+
+        const obstaculoY = parseFloat(obstaculo.style.top);
+
+        if (obstaculoX < jugadorX) {
+          obstaculo.style.left = (obstaculoX + velocidadPersecucion) + 'px';
+        } else {
+          obstaculo.style.left = (obstaculoX - velocidadPersecucion) + 'px';
+        }
+
+        if (obstaculoY < jugadorY) {
+          obstaculo.style.top = (obstaculoY + velocidadPersecucion) + 'px';
+        } else{
+          obstaculo.style.top = (obstaculoY - velocidadPersecucion) + 'px';
+        }
+
+        verificarColision();
+      }
+    }
+
+    function handleKeyPress(event) {
+      switch (event.key) {
+        case 'ArrowLeft':
+          moverJugador('izquierda');
+          break;
+        case 'ArrowRight':
+          moverJugador('derecha');
+          break;
+        case 'ArrowUp':
+          moverJugador('arriba');
+          break;
+        case 'ArrowDown':
+          moverJugador('abajo');
+          break;
+      }
+    }
+
+    function pausarJuego() {
+      if (!juegoEnPausa) {
+        clearInterval(intervaloObstaculos);
+        juegoEnPausa = true;
+        window.location.href = 'juego.html'; //Redirige a la página de menú
+      }
+    }
+
+    botonPausa.addEventListener('click', pausarJuego);
+    document.addEventListener('keydown', handleKeyPress);
+    iniciarJuego();
+  });
+</script>
+</body>
+</html>
